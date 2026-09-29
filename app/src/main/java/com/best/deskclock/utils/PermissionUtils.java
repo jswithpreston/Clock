@@ -61,6 +61,14 @@ public class PermissionUtils {
     }
 
     /**
+     * @return {@code true} when the RECORD_AUDIO permission is granted; {@code false} otherwise.
+     */
+    public static boolean isMicrophonePermissionGranted(@NonNull Context context) {
+        return ContextCompat.checkSelfPermission(context, android.Manifest.permission.RECORD_AUDIO)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    /**
      * Grant or revoke Power-off alarm permission (available only on specific devices).
      */
     public static void grantPowerOffAlarmPermission(@NonNull FragmentActivity activity) {

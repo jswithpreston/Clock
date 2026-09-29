@@ -1543,6 +1543,17 @@
     <string name="night_watch_rearm_notification_text">Your phone rebooted. Tap to re-arm Night Watch for your upcoming alarm.\n\nNote: if you installed the debug build (%1$s), make sure battery exemption and autostart are granted to it — it is treated as a separate app.</string>
     <string name="night_watch_rearm_notification_action">Re-arm</string>
 
+    <!-- Night Watch autostart / background settings deeplink -->
+    <string name="night_watch_autostart_title">Open autostart / background settings</string>
+    <string name="night_watch_autostart_summary">Grant autostart permission on your device (Infinix, Xiaomi, OPPO, Vivo, Huawei, Samsung…)</string>
+
+    <!-- Night Watch mic permission status summaries -->
+    <string name="night_watch_mic_granted_summary">Microphone permission is granted ✓</string>
+    <string name="night_watch_mic_not_granted_summary">Tap to request microphone permission (required for AudioIn wake lock)</string>
+
+    <!-- Debug category header (used by Night Watch debug section) -->
+    <string name="debug_title">Debug</string>
+
     <!-- ************************* -->
     <!-- **     FIRST LAUNCH    ** -->
     <!-- ************************* -->
