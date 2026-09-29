@@ -22,6 +22,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/alarm_night_watch_banner" />
+
+    <include
+        layout="@layout/night_watch_banner"
+        android:id="@+id/alarm_night_watch_banner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/alarm_volume_warning_banner"
         app:layout_constraintBottom_toTopOf="@+id/alarm_recycler_view" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -33,7 +44,7 @@
         android:overScrollMode="never"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/alarm_volume_warning_banner"
+        app:layout_constraintTop_toBottomOf="@+id/alarm_night_watch_banner"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_goneMarginTop="0dp"
         tools:listitem="@layout/alarm_item" />

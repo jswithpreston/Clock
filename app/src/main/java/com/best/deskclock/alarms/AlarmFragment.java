@@ -19,6 +19,7 @@ import static com.best.deskclock.settings.PreferencesDefaultValues.SPINNER_TIME_
 import static com.best.deskclock.settings.PreferencesKeys.KEY_ALARM_FONT;
 import static com.best.deskclock.settings.PreferencesKeys.KEY_DISPLAY_ENABLED_ALARMS_FIRST;
 import static com.best.deskclock.settings.PreferencesKeys.KEY_DISPLAY_LOW_ALARM_VOLUME_WARNING;
+import static com.best.deskclock.settings.PreferencesKeys.KEY_NIGHT_WATCH_ENABLED;
 import static com.best.deskclock.settings.PreferencesKeys.KEY_SORT_ALARM;
 import static com.best.deskclock.uidata.UiDataModel.Tab.ALARMS;
 
@@ -43,6 +44,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -143,6 +145,12 @@ public final class AlarmFragment extends DeskClockFragment
 
                     if (isResumed()) {
                         applySettingsChanges();
+                    }
+                }
+
+                case KEY_NIGHT_WATCH_ENABLED -> {
+                    if (isResumed() && mBinding != null) {
+                        updateNightWatchBanner();
                     }
                 }
             }
@@ -262,6 +270,24 @@ public final class AlarmFragment extends DeskClockFragment
         mBinding.alarmVolumeWarningBanner.volumeWarningText.setTypeface(getGeneralBoldTypeface());
         mBinding.alarmVolumeWarningBanner.volumeWarningButton.setTypeface(getGeneralBoldTypeface());
 
+        // Night Watch banner — wire Start and Stop buttons.
+        mBinding.alarmNightWatchBanner.nightWatchBannerLabel.setTypeface(getGeneralBoldTypeface());
+        mBinding.alarmNightWatchBanner.nightWatchBannerStartButton.setTypeface(getGeneralBoldTypeface());
+        mBinding.alarmNightWatchBanner.nightWatchBannerStopButton.setTypeface(getGeneralBoldTypeface());
+
+        mBinding.alarmNightWatchBanner.nightWatchBannerStartButton.setOnClickListener(v -> {
+            boolean armed = NightWatchService.arm(requireContext());
+            if (!armed) {
+                Toast.makeText(requireContext(),
+                        R.string.night_watch_no_alarm_toast, Toast.LENGTH_SHORT).show();
+            }
+            // Banner updates via pref listener when KEY_NIGHT_WATCH_ENABLED changes.
+        });
+
+        mBinding.alarmNightWatchBanner.nightWatchBannerStopButton.setOnClickListener(v -> {
+            NightWatchService.disarm(requireContext());
+        });
+
         mItemAdapter = new AlarmAdapter(requireContext(), getFontsConfig(), dateConfig, getScreenConfig(), getCardStyleConfig(),
             getHapticsConfig(), mWeekdayOrder, mIs24HourFormat, new AlarmAdapter.AlarmStateProvider() {
                 @Override
@@ -297,6 +323,7 @@ public final class AlarmFragment extends DeskClockFragment
         mCursorLoader = LoaderManager.getInstance(this).initLoader(0, null, this);
 
         updateWarningBannerVisibility();
+        updateNightWatchBanner();
 
         if (savedInstanceState != null) {
             Alarm restoredAlarm = BundleCompat.getParcelable(savedInstanceState, KEY_SELECTED_ALARM, Alarm.class);
@@ -412,6 +439,7 @@ public final class AlarmFragment extends DeskClockFragment
                 }
 
                 updateWarningBannerVisibility();
+                updateNightWatchBanner();
             });
         }
 
@@ -1166,6 +1194,55 @@ public final class AlarmFragment extends DeskClockFragment
                 if (mBinding != null) {
                     mBinding.alarmVolumeWarningBanner.volumeWarningBanner.setVisibility(shouldShow ? VISIBLE : GONE);
                 }
+            });
+        });
+    }
+
+    /**
+     * Updates the Night Watch banner to reflect the current arm/disarm state.
+     * Shows the banner always (so the user knows Night Watch exists), with
+     * Start visible when off and Stop visible when on.
+     * Runs an async DB query to get the next alarm time for the label.
+     */
+    private void updateNightWatchBanner() {
+        if (!isAdded() || mBinding == null) {
+            return;
+        }
+
+        final boolean armed = NightWatchService.isArmed(getPrefs());
+
+        // Always show the banner so the user can discover/control Night Watch.
+        mBinding.alarmNightWatchBanner.nightWatchBanner.setVisibility(VISIBLE);
+
+        // Toggle Start/Stop visibility.
+        mBinding.alarmNightWatchBanner.nightWatchBannerStartButton.setVisibility(armed ? GONE : VISIBLE);
+        mBinding.alarmNightWatchBanner.nightWatchBannerStopButton.setVisibility(armed ? VISIBLE : GONE);
+
+        if (!armed) {
+            mBinding.alarmNightWatchBanner.nightWatchBannerLabel.setText(
+                    getString(R.string.night_watch_banner_title) + " · " +
+                    getString(R.string.night_watch_banner_off_label));
+            return;
+        }
+
+        // Fetch the next alarm time from the DB and update the label.
+        final Context ctx = requireContext().getApplicationContext();
+        AppExecutors.getDiskIO().execute(() -> {
+            final AlarmInstance next = AlarmInstance.getNextFiringAlarm(ctx);
+            AppExecutors.getMainThread().post(() -> {
+                if (!isAdded() || mBinding == null) return;
+                if (next == null) {
+                    mBinding.alarmNightWatchBanner.nightWatchBannerLabel.setText(
+                            getString(R.string.night_watch_banner_title));
+                    return;
+                }
+                final boolean is24h = getDataModel().is24HourFormat();
+                final String pattern = is24h ? "HH:mm" : "h:mm a";
+                final String timeStr = new java.text.SimpleDateFormat(
+                        pattern, java.util.Locale.getDefault())
+                        .format(next.getAlarmTime().getTime());
+                mBinding.alarmNightWatchBanner.nightWatchBannerLabel.setText(
+                        getString(R.string.night_watch_banner_on_label, timeStr));
             });
         });
     }

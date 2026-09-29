@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    SPDX-License-Identifier: GPL-3.0-only
+    Night Watch status banner shown above the alarm list in AlarmFragment.
+    Mimics the volume_warning_banner pattern: a MaterialCardView with
+    a label on the left and action buttons on the right.
+-->
+
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/night_watch_banner"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:visibility="gone"
+    app:cardBackgroundColor="?attr/colorSecondaryContainer"
+    app:strokeColor="?attr/colorSecondary"
+    tools:visibility="visible">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="10dp">
+
+        <!-- Moon icon -->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/night_watch_banner_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🌙"
+            android:textSize="18sp"
+            android:includeFontPadding="false"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <!-- Status label: "Off" or "On · Alarm at HH:mm" -->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/night_watch_banner_label"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:gravity="center_vertical"
+            android:textColor="?attr/colorOnSecondaryContainer"
+            android:textStyle="bold"
+            android:includeFontPadding="false"
+            tools:text="Night Watch · Alarm at 07:00"
+            app:layout_constraintStart_toEndOf="@+id/night_watch_banner_icon"
+            app:layout_constraintEnd_toStartOf="@+id/night_watch_banner_start_button"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_chainStyle="spread_inside" />
+
+        <!-- Start button (visible when Off) -->
+        <com.google.android.material.button.MaterialButton
+            style="?attr/materialButtonOutlinedStyle"
+            android:id="@+id/night_watch_banner_start_button"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:paddingTop="0dp"
+            android:paddingBottom="0dp"
+            android:text="@string/night_watch_start_button"
+            android:textColor="?attr/colorOnSecondaryContainer"
+            android:includeFontPadding="false"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="visible"
+            app:strokeColor="?attr/colorOnSecondaryContainer"
+            app:layout_constraintStart_toEndOf="@+id/night_watch_banner_label"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:visibility="visible" />
+
+        <!-- Stop button (visible when On) -->
+        <com.google.android.material.button.MaterialButton
+            style="?attr/materialButtonOutlinedStyle"
+            android:id="@+id/night_watch_banner_stop_button"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:paddingTop="0dp"
+            android:paddingBottom="0dp"
+            android:text="@string/night_watch_stop_action"
+            android:textColor="?attr/colorOnSecondaryContainer"
+            android:includeFontPadding="false"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="gone"
+            app:strokeColor="?attr/colorOnSecondaryContainer"
+            app:layout_constraintStart_toEndOf="@+id/night_watch_banner_label"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:visibility="gone" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

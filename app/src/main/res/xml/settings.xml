@@ -81,6 +81,14 @@
         app:singleLineTitle="false" />
 
     <Preference
+        android:key="key_night_watch_settings"
+        android:layout="@layout/settings_preference_layout"
+        android:title="@string/night_watch_settings_title"
+        android:summary="@string/night_watch_settings_summary"
+        android:icon="@drawable/ic_notifications"
+        app:singleLineTitle="false" />
+
+    <Preference
         android:key="key_backup_restore_preferences"
         android:layout="@layout/settings_preference_layout"
         android:title="@string/backup_restore_title"

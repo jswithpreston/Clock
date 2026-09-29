@@ -140,6 +140,7 @@ public final class SettingsActivity extends CollapsingToolbarBaseActivity {
         Preference mPermissionsManagement;
         Preference mPermissionMessage;
         Preference mBackupRestorePref;
+        Preference mNightWatchSettingsPref;
 
         private AlertDialog mRestartDialog;
 
@@ -262,6 +263,7 @@ public final class SettingsActivity extends CollapsingToolbarBaseActivity {
             mPermissionsManagement = findPreference(KEY_PERMISSIONS_MANAGEMENT);
             mPermissionMessage = findPreference(KEY_PERMISSION_MESSAGE);
             mBackupRestorePref = findPreference(KEY_BACKUP_RESTORE_PREFERENCES);
+            mNightWatchSettingsPref = findPreference(KEY_NIGHT_WATCH_SETTINGS);
 
             if (savedInstanceState != null) {
                 mShowBackupRestoreDialog = savedInstanceState.getBoolean(KEY_SHOW_BACKUP_RESTORE_DIALOG, false);
@@ -332,6 +334,9 @@ public final class SettingsActivity extends CollapsingToolbarBaseActivity {
                 case KEY_PERMISSION_MESSAGE, KEY_PERMISSIONS_MANAGEMENT ->
                     animateAndShowFragment(new PermissionsManagementActivity.PermissionsManagementFragment());
 
+                case KEY_NIGHT_WATCH_SETTINGS ->
+                    animateAndShowFragment(new NightWatchSettingsActivity.NightWatchSettingsFragment());
+
                 case KEY_BACKUP_RESTORE_PREFERENCES -> showBackupRestoreDialog();
             }
 
@@ -356,6 +361,10 @@ public final class SettingsActivity extends CollapsingToolbarBaseActivity {
             mWidgetsSettings.setOnPreferenceClickListener(this);
 
             mPermissionsManagement.setOnPreferenceClickListener(this);
+
+            if (mNightWatchSettingsPref != null) {
+                mNightWatchSettingsPref.setOnPreferenceClickListener(this);
+            }
 
             mBackupRestorePref.setOnPreferenceClickListener(this);
         }
