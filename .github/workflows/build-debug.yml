@@ -1,21 +1,16 @@
 # Night Watch – build the debug APK
 #
-# Triggers:
-#   • Every push to any branch (restrict to feature/night-watch if preferred)
-#   • Manual dispatch (workflow_dispatch)
+# Triggers: every push + manual dispatch.
 #
-# Outputs:
-#   • Artifact "night-watch-debug-apk" → Clock_*-debug.apk (14-day retention)
-#
-# Build requirements (from app/build.gradle):
-#   JDK 17   (AGP 9.4.1 / Gradle 9.8.0 minimum)
-#   compileSdk / targetSdk = 37
-#   ndkVersion = 29.0.14206865
-#
-# Strategy: let Gradle auto-download missing SDK components via the SDK
-# Manager built into AGP. The ubuntu-latest runner already ships with a
-# recent Android SDK; we just need to ensure licenses are accepted and
-# that the ANDROID_HOME env var is set correctly.
+# Key insight: platforms;android-37 is not yet in the sdkmanager package
+# index on GitHub-hosted runners (ubuntu-latest ships SDK ~34-35).
+# AGP 9.x has built-in SDK auto-provisioning: it downloads the required
+# platform directly from Google when ANDROID_SDK_ROOT points to a writable
+# directory and licenses are pre-accepted.
+# We therefore:
+#   1. Pre-accept all licenses in the existing ANDROID_SDK_ROOT.
+#   2. Install ONLY the NDK (which IS in the index) via sdkmanager.
+#   3. Let Gradle/AGP auto-download platforms;android-37 during the build.
 
 name: Build Debug APK (Night Watch)
 
@@ -30,6 +25,10 @@ jobs:
     name: assembleDebug
     runs-on: ubuntu-latest
 
+    env:
+      # ubuntu-latest always sets this; make it explicit for every step.
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
     steps:
       # ── 1. Checkout ──────────────────────────────────────────────────────────
       - name: Checkout repository
@@ -37,7 +36,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      # ── 2. Set up JDK 17 ─────────────────────────────────────────────────────
+      # ── 2. JDK 17 ────────────────────────────────────────────────────────────
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -45,53 +44,46 @@ jobs:
           java-version: "17"
           cache: gradle
 
-      # ── 3. Accept SDK licenses ────────────────────────────────────────────────
-      # The ubuntu-latest runner ships ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
-      # All we need is to pre-accept licenses so AGP auto-download doesn't hang.
+      # ── 3. Pre-accept SDK licenses ────────────────────────────────────────────
+      # Writing the hash files directly is faster and more reliable than
+      # piping `yes` into sdkmanager --licenses.
       - name: Accept Android SDK licenses
         run: |
-          SDKMAN_DIR="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
-          mkdir -p "${SDKMAN_DIR}/licenses"
-          # Standard Android SDK license
-          echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" \
-            > "${SDKMAN_DIR}/licenses/android-sdk-license"
-          echo "8933bad161af4178b1185d1a37fbf41ea5269c55" \
-            >> "${SDKMAN_DIR}/licenses/android-sdk-license"
-          echo "d56f5187479451eabf01fb78af6dfcb131a6481e" \
-            >> "${SDKMAN_DIR}/licenses/android-sdk-license"
-          # Android SDK Preview license
-          echo "84831b9409646a918e30573bab4c9c91346d8abd" \
-            > "${SDKMAN_DIR}/licenses/android-sdk-preview-license"
-          # Intel HAXM license
-          echo "d975f751698a77b662f1254ddbeed3901e976f5a" \
-            > "${SDKMAN_DIR}/licenses/intel-android-extra-license"
-          echo "33b6a2b64607f11b759f320ef9dff4ae5c47d97a" \
-            >> "${SDKMAN_DIR}/licenses/intel-android-extra-license"
+          mkdir -p "${ANDROID_SDK_ROOT}/licenses"
+          # android-sdk-license  (covers platforms, build-tools, etc.)
+          printf "24333f8a63b6825ea9c5514f83c2829b004d1fee\n8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb78af6dfcb131a6481e\n" \
+            > "${ANDROID_SDK_ROOT}/licenses/android-sdk-license"
+          # android-sdk-preview-license  (SDK 37 is still "preview" in the index)
+          printf "84831b9409646a918e30573bab4c9c91346d8abd\n504667f4c0de7af1a06de9f4b1727b84351f2910\n" \
+            > "${ANDROID_SDK_ROOT}/licenses/android-sdk-preview-license"
+          # intel / ARM extras
+          printf "d975f751698a77b662f1254ddbeed3901e976f5a\n33b6a2b64607f11b759f320ef9dff4ae5c47d97a\n" \
+            > "${ANDROID_SDK_ROOT}/licenses/intel-android-extra-license"
+          printf "d975f751698a77b662f1254ddbeed3901e976f5a\n" \
+            > "${ANDROID_SDK_ROOT}/licenses/arm-linux-androideabi-license" || true
+          echo "Licenses written."
 
-      # ── 4. Install SDK 37 and NDK via sdkmanager ──────────────────────────────
-      # The runner image usually has SDK up to ~34; we need 37 and NDK 29.
-      - name: Install SDK 37 and NDK 29
+      # ── 4. Install NDK via sdkmanager ─────────────────────────────────────────
+      # NDK 29.0.14206865 IS in the runner's sdkmanager index.
+      # We install it explicitly so app/build.gradle's ndkVersion resolves
+      # without triggering another download during the build.
+      - name: Install NDK 29
         run: |
-          SDKMAN_DIR="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
-          # sdkmanager is in cmdline-tools
-          SDKMANAGER=$(find "${SDKMAN_DIR}" -name "sdkmanager" -type f 2>/dev/null | head -1)
-          if [ -z "$SDKMANAGER" ]; then
-            echo "sdkmanager not found under ${SDKMAN_DIR}"
-            exit 1
-          fi
-          echo "Using sdkmanager: $SDKMANAGER"
-          yes | "$SDKMANAGER" \
-            "platforms;android-37" \
-            "build-tools;35.0.0" \
-            "ndk;29.0.14206865"
+          SDKMANAGER=$(find "${ANDROID_SDK_ROOT}" -name "sdkmanager" -type f 2>/dev/null | head -1)
+          echo "sdkmanager: ${SDKMANAGER}"
+          yes | "${SDKMANAGER}" --licenses > /dev/null 2>&1 || true
+          "${SDKMANAGER}" "ndk;29.0.14206865"
 
       # ── 5. Build ──────────────────────────────────────────────────────────────
+      # AGP will auto-download platforms;android-37 on first run because:
+      #   • ANDROID_SDK_ROOT is set and writable (runner user owns it).
+      #   • Licenses are pre-accepted.
+      #   • gradle.properties does NOT set android.sdk.channel, so AGP
+      #     uses its default channel which includes preview/new platforms.
       - name: Make gradlew executable
         run: chmod +x gradlew
 
       - name: Build debug APK
-        env:
-          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
         run: ./gradlew assembleDebug --no-daemon --no-configuration-cache --stacktrace
 
       # ── 6. Upload artifact ────────────────────────────────────────────────────
