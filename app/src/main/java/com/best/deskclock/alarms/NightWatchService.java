@@ -645,17 +645,19 @@ public class NightWatchService extends Service {
 
             // Send the exact same intent AlarmManager would send: CHANGE_STATE_ACTION → FIRED_STATE,
             // directed at AlarmService which then calls AlarmStateManager.handleIntent().
+            // Note: AlarmStateManager.ALARM_MANAGER_TAG is private; use the string value directly.
             final Intent fireIntent = AlarmStateManager.createStateChangeIntent(
                     ctx,
                     instance,
-                    AlarmStateManager.ALARM_MANAGER_TAG,
+                    "ALARM_MANAGER",
                     AlarmInstance.FIRED_STATE,
                     SettingsDAO.getGlobalIntentId(prefs));
             fireIntent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
             ctx.startService(fireIntent);
 
             // Give AlarmService a moment to start and stop the service after a short delay.
-            mScheduler.schedule(this::stopSelf, 30, TimeUnit.SECONDS);
+            // Cast to Runnable to resolve ambiguity with Callable overload.
+            mScheduler.schedule((Runnable) this::stopSelf, 30, TimeUnit.SECONDS);
 
         } catch (Exception e) {
             LogUtils.e("NightWatch: exception in maybeFallbackFireAlarm", e);
@@ -709,8 +711,9 @@ public class NightWatchService extends Service {
         }
 
         // Cancel the PendingIntent that AlarmManager would fire.
+        // Note: AlarmStateManager.ALARM_MANAGER_TAG is private; use the string value directly.
         final Intent intent = AlarmStateManager.createStateChangeIntent(
-                ctx, instance, AlarmStateManager.ALARM_MANAGER_TAG,
+                ctx, instance, "ALARM_MANAGER",
                 AlarmInstance.FIRED_STATE, SettingsDAO.getGlobalIntentId(prefs));
         final PendingIntent pi = PendingIntent.getService(
                 ctx, instance.hashCode(), intent,
