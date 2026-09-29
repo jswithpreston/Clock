@@ -1,0 +1,81 @@
+# Night Watch – build the debug APK
+#
+# Triggers:
+#   • Every push to feature/night-watch (and any branch, adjust as needed)
+#   • Manual dispatch (workflow_dispatch) so you can trigger a build without a push
+#
+# Outputs:
+#   • Artifact "night-watch-debug-apk" containing
+#     app/build/outputs/apk/debug/Clock_*-debug.apk
+#
+# JDK requirement: the project uses AGP 9.4.1 which requires JDK 17.
+# NDK requirement: ndkVersion = '29.0.14206865' declared in app/build.gradle.
+# Platform: compileSdk = 37 → needs platforms;android-37.
+#
+# The workflow uses android-actions/setup-android to install the SDK
+# components and accepts licenses automatically.
+
+name: Build Debug APK (Night Watch)
+
+on:
+  push:
+    branches:
+      - "feature/night-watch"
+      - "**"          # remove this line to restrict to the feature branch only
+  workflow_dispatch:
+
+jobs:
+  build-debug:
+    name: assembleDebug
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Checkout ──────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      # ── 2. Set up JDK 17 ─────────────────────────────────────────────────────
+      # AGP 9.x and Gradle 9.x both require JDK 17+.
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      # ── 3. Set up Android SDK ─────────────────────────────────────────────────
+      # Installs the Android SDK, accepts all licenses, and ensures the required
+      # platform (android-37) and NDK (29.0.14206865) are available.
+      # If Gradle auto-download is enabled in gradle.properties this step is
+      # belt-and-suspenders, but it guarantees a clean first-run cache.
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install required SDK components
+        run: |
+          sdkmanager --install \
+            "platforms;android-37" \
+            "build-tools;35.0.0" \
+            "ndk;29.0.14206865" \
+            "cmake;3.22.1" \
+            --sdk_root="${ANDROID_SDK_ROOT}"
+          # Accept any outstanding licenses that setup-android may have missed
+          yes | sdkmanager --licenses --sdk_root="${ANDROID_SDK_ROOT}" || true
+
+      # ── 4. Build ──────────────────────────────────────────────────────────────
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      # ── 5. Upload artifact ────────────────────────────────────────────────────
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: night-watch-debug-apk
+          path: app/build/outputs/apk/debug/Clock_*-debug.apk
+          retention-days: 14
+          if-no-files-found: error
