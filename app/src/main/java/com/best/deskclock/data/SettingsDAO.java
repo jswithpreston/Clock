@@ -76,6 +76,26 @@ public final class SettingsDAO {
         prefs.edit().putInt(KEY_ALARM_GLOBAL_ID, globalId).apply();
     }
 
+    // ──────────────────────────────────────────────────────────
+    // Night Watch
+    // ──────────────────────────────────────────────────────────
+
+    /**
+     * @return {@code true} if Night Watch should open the microphone to hold an AudioIn wake lock.
+     */
+    public static boolean isNightWatchUseMicrophone(@NonNull SharedPreferences prefs) {
+        return prefs.getBoolean(
+                com.best.deskclock.settings.PreferencesKeys.KEY_NIGHT_WATCH_USE_MICROPHONE, true);
+    }
+
+    /**
+     * @return {@code true} if Night Watch should hold a PARTIAL_WAKE_LOCK.
+     */
+    public static boolean isNightWatchHoldWakeLock(@NonNull SharedPreferences prefs) {
+        return prefs.getBoolean(
+                com.best.deskclock.settings.PreferencesKeys.KEY_NIGHT_WATCH_HOLD_WAKE_LOCK, true);
+    }
+
     /**
      * @return {@code true} if the foreground service is enabled to display a persistent notification.
      * {@code false} otherwise.

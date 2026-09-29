@@ -1508,6 +1508,40 @@
     <string name="stopwatch_channel">Stopwatch</string>
     <string name="timer_channel">Timer</string>
     <string name="timer_missed_channel">Missed timers</string>
+    <string name="night_watch_channel">Night Watch</string>
+
+    <!-- Night Watch service strings -->
+    <string name="night_watch_notification_title">Night Watch active</string>
+    <!-- %1$s = formatted alarm time, e.g. "07:00" -->
+    <string name="night_watch_notification_text">Alarm at %1$s. Nothing is recorded.</string>
+    <string name="night_watch_stop_action">Stop</string>
+
+    <!-- Night Watch settings screen -->
+    <string name="night_watch_settings_title">Night Watch</string>
+    <string name="night_watch_settings_summary">Keep the app alive overnight so alarms ring reliably</string>
+    <string name="night_watch_explanation_title">How it works</string>
+    <string name="night_watch_explanation_text">Night Watch opens the microphone and holds a CPU wake lock overnight so that aggressive OEM power managers (like Infinix XOS) cannot kill the app before your alarm rings.\n\nNo audio is ever recorded, stored, analysed, or transmitted. The microphone is used only to hold a system wake lock — the same technique used by professional sleep-tracking apps.</string>
+    <string name="night_watch_charging_reminder">💡 Keep your phone charging overnight.</string>
+    <string name="night_watch_use_microphone_title">Use microphone</string>
+    <string name="night_watch_use_microphone_summary">Open the mic to hold an AudioIn system wake lock (recommended on Infinix/Transsion)</string>
+    <string name="night_watch_hold_wake_lock_title">Hold CPU wake lock</string>
+    <string name="night_watch_hold_wake_lock_summary">Acquire a PARTIAL_WAKE_LOCK for the duration of Night Watch</string>
+    <string name="night_watch_debug_cancel_alarm_title">Cancel AlarmManager entry (debug)</string>
+    <string name="night_watch_debug_cancel_alarm_summary">Removes the system alarm entry; Night Watch fallback should still ring at the right time</string>
+
+    <!-- Night Watch banner on alarm tab -->
+    <string name="night_watch_banner_title">Night Watch</string>
+    <string name="night_watch_banner_off_label">Off</string>
+    <!-- %1$s = alarm time string -->
+    <string name="night_watch_banner_on_label">On · Alarm at %1$s</string>
+    <string name="night_watch_start_button">Start</string>
+    <string name="night_watch_no_alarm_toast">No upcoming alarms — set an alarm first</string>
+
+    <!-- Night Watch boot re-arm notification -->
+    <string name="night_watch_rearm_notification_title">Night Watch needs to be re-armed</string>
+    <!-- %1$s = app name (different for debug/nightly variants) -->
+    <string name="night_watch_rearm_notification_text">Your phone rebooted. Tap to re-arm Night Watch for your upcoming alarm.\n\nNote: if you installed the debug build (%1$s), make sure battery exemption and autostart are granted to it — it is treated as a separate app.</string>
+    <string name="night_watch_rearm_notification_action">Re-arm</string>
 
     <!-- ************************* -->
     <!-- **     FIRST LAUNCH    ** -->

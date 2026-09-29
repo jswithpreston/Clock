@@ -267,6 +267,18 @@ public class PreferencesKeys {
     public static final String KEY_SHOW_LOCKSCREEN_PERMISSION = "key_show_lockscreen_permission";
     public static final String KEY_ENABLE_FOREGROUND_SERVICE = "key_enable_foreground_service";
 
+    // Night Watch
+    /** Whether Night Watch is currently armed (service is running). */
+    public static final String KEY_NIGHT_WATCH_ENABLED = "key_night_watch_enabled";
+    /** Target alarm time in millis saved so the service can restore itself after START_STICKY restart. */
+    public static final String KEY_NIGHT_WATCH_TARGET_ALARM_TIME = "key_night_watch_target_alarm_time";
+    /** Whether the mic loop is enabled (default true). Toggle to A/B test on XOS. */
+    public static final String KEY_NIGHT_WATCH_USE_MICROPHONE = "key_night_watch_use_microphone";
+    /** Whether the PARTIAL_WAKE_LOCK is held (default true). Toggle to A/B test on XOS. */
+    public static final String KEY_NIGHT_WATCH_HOLD_WAKE_LOCK = "key_night_watch_hold_wake_lock";
+    /** Settings screen navigation key. */
+    public static final String KEY_NIGHT_WATCH_SETTINGS = "key_night_watch_settings";
+
     // **************
     // ** WIDGETS **
     // **************

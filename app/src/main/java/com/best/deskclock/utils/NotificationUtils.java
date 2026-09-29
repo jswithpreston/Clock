@@ -79,6 +79,12 @@ public class NotificationUtils {
      */
     public static final String STOPWATCH_NOTIFICATION_CHANNEL_ID = "stopwatchNotification_v2";
 
+    /**
+     * Notification channel for the Night Watch foreground service.
+     * HIGH importance so it is not silenced by the system, but no sound/vibration/badge.
+     */
+    public static final String NIGHT_WATCH_CHANNEL_ID = "nightWatchService";
+
     public static final String EXTRA_UPDATE_ALARM_NOTIFICATIONS = "EXTRA_UPDATE_ALARM_NOTIFICATIONS";
 
     private static final String TAG = NotificationUtils.class.getSimpleName();
@@ -125,6 +131,12 @@ public class NotificationUtils {
 
         CHANNEL_PROPS.put(TIMER_MISSED_NOTIFICATION_CHANNEL_ID, new int[]{
             R.string.timer_missed_channel, IMPORTANCE_DEFAULT, LOCKSCREEN_PUBLIC
+        });
+
+        // Night Watch: HIGH importance so the ongoing notification is not demoted, but no sound,
+        // no vibration, no badge — user should not be disturbed while sleeping.
+        CHANNEL_PROPS.put(NIGHT_WATCH_CHANNEL_ID, new int[]{
+            R.string.night_watch_channel, IMPORTANCE_HIGH, LOCKSCREEN_PUBLIC | HIDE_BADGE
         });
     }
 

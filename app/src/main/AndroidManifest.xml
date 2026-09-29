@@ -18,6 +18,12 @@
     <uses-permission
         android:name="android.permission.USE_FULL_SCREEN_INTENT"
         tools:ignore="FullScreenIntentPolicy" />
+    <!-- Night Watch: needed to open the microphone for the AudioIn wake lock -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Night Watch: required on API 34+ when foregroundServiceType includes "microphone" -->
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"
+        tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="org.codeaurora.permission.POWER_OFF_ALARM" />
     <uses-permission
         android:name="android.permission.SCHEDULE_EXACT_ALARM"
@@ -245,6 +251,22 @@
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Used to notify the user that alarms are running" />
+        </service>
+
+        <!--
+            Night Watch: keeps the process alive overnight so alarms fire reliably on
+            aggressive OEM kernels (Infinix XOS, etc.).
+            foregroundServiceType="microphone|specialUse" matches runtime type selection:
+              • if RECORD_AUDIO is granted → MICROPHONE type is used at runtime
+              • otherwise                 → SPECIAL_USE type is used at runtime
+        -->
+        <service
+            android:name="com.best.deskclock.alarms.NightWatchService"
+            android:exported="false"
+            android:foregroundServiceType="microphone|specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Keeps the app alive overnight so alarms ring reliably; microphone audio is discarded and never stored" />
         </service>
 
         <!-- ============================================================== -->
